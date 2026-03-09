@@ -229,7 +229,7 @@
     </div>
     <div class="grid" id="grid"></div>
     <button class="restart-btn" id="restartBtn">重新开始</button>
-    <p class="hint">每色1牛 · 每牛9宫格内无他牛 · 每行每列各1牛</p>
+    <p class="hint">同色相邻 · 每色1牛 · 每牛9宫格内无他牛</p>
   </div>
 
   <script>
@@ -269,25 +269,14 @@
       currentMode = 'reveal';
       updateModeButtons();
 
-      // 创建位置数组并打乱，用于分配颜色
-      const positions = [];
-      for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-          positions.push([r, c]);
-        }
-      }
-      shuffle(positions);
-
-      // 创建空网格并分配颜色
+      // 创建空网格
       for (let r = 0; r < ROWS; r++) {
         grid[r] = [];
         for (let c = 0; c < COLS; c++) {
           grid[r][c] = { isMine: false, revealed: false, flagged: false, colorIndex: -1 };
         }
       }
-      positions.forEach(([r, c], i) => {
-        grid[r][c].colorIndex = Math.floor(i / (ROWS * COLS / MINES));
-      });
+      assignColorsContiguous();
 
       // 雷的生成规则：每色1雷、每雷周围9宫格无其他雷、每行每列各1雷
       if (!placeMinesWithRules()) {
@@ -321,6 +310,66 @@
       for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    function assignColorsContiguous() {
+      const total = ROWS * COLS;
+      const perColor = [Math.floor(total / MINES), Math.floor(total / MINES), total - 2 * Math.floor(total / MINES)];
+      const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+      const is4Adj = (r1,c1,r2,c2) => Math.abs(r1-r2)+Math.abs(c1-c2)===1;
+      const getNeighbors = (r,c) => dirs.map(([dr,dc])=>[r+dr,c+dc]).filter(([nr,nc])=>nr>=0&&nr<ROWS&&nc>=0&&nc<COLS);
+
+      let seeds = [];
+      for (let tryCount = 0; tryCount < 200; tryCount++) {
+        const all = [];
+        for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) all.push([r,c]);
+        shuffle(all);
+        seeds = [[all[0],0]];
+        for (let i = 1; i < all.length && seeds.length < MINES; i++) {
+          const [r,c] = all[i];
+          if (seeds.every(([[sr,sc],_]) => !is4Adj(r,c,sr,sc))) {
+            seeds.push([[r,c], seeds.length]);
+          }
+        }
+        if (seeds.length === MINES) break;
+      }
+      seeds.forEach(([[r,c]], color) => { grid[r][c].colorIndex = color; });
+
+      const frontiers = seeds.map(([[r,c]]) => [[r,c]]);
+      let assigned = MINES;
+      while (assigned < total) {
+        let grew = false;
+        for (let color = 0; color < MINES; color++) {
+          const count = [...Array(ROWS)].flatMap((_,r)=>[...Array(COLS)].map((_,c)=>[r,c])).filter(([r,c])=>grid[r][c].colorIndex===color).length;
+          if (count >= perColor[color]) continue;
+          const next = [];
+          for (const [r,c] of frontiers[color]) {
+            for (const [nr,nc] of getNeighbors(r,c)) {
+              if (grid[nr][nc].colorIndex === -1) {
+                grid[nr][nc].colorIndex = color;
+                assigned++;
+                next.push([nr,nc]);
+                grew = true;
+                break;
+              }
+            }
+            if (grew) break;
+          }
+          if (grew) {
+            frontiers[color] = [...frontiers[color], ...next];
+            break;
+          }
+        }
+        if (!grew) {
+          for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+            if (grid[r][c].colorIndex === -1) {
+              const adj = getNeighbors(r,c).find(([nr,nc])=>grid[nr][nc].colorIndex>=0);
+              grid[r][c].colorIndex = adj ? grid[adj[0]][adj[1]].colorIndex : 0;
+            }
+          }
+          break;
+        }
       }
     }
 
