@@ -29,6 +29,9 @@
     }
     
     .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       background: rgba(22, 33, 62, 0.9);
       padding: 30px;
       border-radius: 16px;
@@ -52,15 +55,19 @@
       align-items: center;
       margin-bottom: 10px;
       padding: 0 5px;
+      width: 100%;
+      max-width: 400px;
     }
     
     .color-legend {
       display: flex;
+      flex-wrap: wrap;
       gap: 12px;
       justify-content: center;
       margin-bottom: 12px;
       font-size: 0.75rem;
       color: #8b9aaa;
+      max-width: 100%;
     }
     
     .color-legend span {
@@ -78,12 +85,21 @@
     .color-legend .swatch.c0 { background: #264a73; }
     .color-legend .swatch.c1 { background: #235544; }
     .color-legend .swatch.c2 { background: #4e3880; }
+    .color-legend .swatch.c3 { background: #5c3d2e; }
+    .color-legend .swatch.c4 { background: #3d5c6e; }
+    .color-legend .swatch.c5 { background: #5e3d5c; }
+    .color-legend .swatch.c6 { background: #4a5c3d; }
+    .color-legend .swatch.c7 { background: #5c4a3d; }
+    .color-legend .swatch.c8 { background: #3d4a5c; }
+    .color-legend .swatch.c9 { background: #5c3d4a; }
     
     .mode-toggle {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-bottom: 15px;
+      width: 100%;
+      max-width: 400px;
     }
     
     .mode-btn {
@@ -123,17 +139,16 @@
     
     .grid {
       display: grid;
-      grid-template-columns: repeat(4, 80px);
-      grid-template-rows: repeat(4, 80px);
       gap: 4px;
       background: #0d1b2a;
       padding: 16px;
       border-radius: 16px;
+      margin: 0 auto;
     }
     
     .cell {
-      width: 80px;
-      height: 80px;
+      min-width: 32px;
+      min-height: 32px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -151,6 +166,13 @@
     .cell.color-0 { background: linear-gradient(145deg, #1e3a5f 0%, #264a73 100%); }
     .cell.color-1 { background: linear-gradient(145deg, #1a3d32 0%, #235544 100%); }
     .cell.color-2 { background: linear-gradient(145deg, #3d2a5f 0%, #4e3880 100%); }
+    .cell.color-3 { background: linear-gradient(145deg, #3d251a 0%, #4e3526 100%); }
+    .cell.color-4 { background: linear-gradient(145deg, #1a3240 0%, #264559 100%); }
+    .cell.color-5 { background: linear-gradient(145deg, #3d1a35 0%, #4e2648 100%); }
+    .cell.color-6 { background: linear-gradient(145deg, #2a3d1a 0%, #354e26 100%); }
+    .cell.color-7 { background: linear-gradient(145deg, #3d322a 0%, #4e4236 100%); }
+    .cell.color-8 { background: linear-gradient(145deg, #1a2a3d 0%, #26364e 100%); }
+    .cell.color-9 { background: linear-gradient(145deg, #3d1a2a 0%, #4e2636 100%); }
     
     .cell:hover:not(.revealed):not(.flagged),
     .cell:active:not(.revealed):not(.flagged) {
@@ -179,8 +201,8 @@
     }
     
     .cell.revealed.mine img {
-      width: 64px;
-      height: 64px;
+      max-width: 90%;
+      max-height: 90%;
       object-fit: contain;
     }
     
@@ -208,35 +230,199 @@
       color: #6b7280;
       text-align: center;
     }
+    
+    .settings-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      font-size: 1.4rem;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .settings-btn:active { transform: scale(0.95); }
+    
+    .game-container { position: relative; }
+    
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .modal-overlay.show { display: flex; }
+    
+    .modal {
+      background: linear-gradient(145deg, #1b263b 0%, #16213e 100%);
+      border-radius: 16px;
+      padding: 24px;
+      min-width: 200px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .modal h3 {
+      margin-bottom: 16px;
+      text-align: center;
+      color: #e8e8e8;
+    }
+    
+    .picker-wrap {
+      height: 140px;
+      overflow: hidden;
+      margin: 16px 0;
+      position: relative;
+    }
+    
+    .picker-wrap::before, .picker-wrap::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 45px;
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    .picker-wrap::before {
+      top: 0;
+      background: linear-gradient(to bottom, #16213e, transparent);
+    }
+    
+    .picker-wrap::after {
+      bottom: 0;
+      background: linear-gradient(to top, #16213e, transparent);
+    }
+    
+    .picker-list {
+      height: 100%;
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .picker-pad { height: 45px; flex-shrink: 0; }
+    
+    .picker-item {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #a0a0a0;
+      scroll-snap-align: center;
+      scroll-snap-stop: always;
+    }
+    
+    .picker-item.selected { color: #ff6b6b; font-weight: 700; }
+    
+    .apply-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 16px;
+      font-size: 1rem;
+      font-family: inherit;
+      background: linear-gradient(135deg, #e94560, #ff6b6b);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+    }
+    
+    .apply-btn:active { transform: scale(0.98); }
+    
+    .hint-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 16px 0;
+      padding: 12px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+    }
+    
+    .hint-toggle span { font-size: 0.9rem; color: #e8e8e8; }
+    
+    .toggle-btn {
+      width: 52px;
+      height: 28px;
+      border-radius: 14px;
+      border: none;
+      background: #415a77;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .toggle-btn.on { background: #e94560; }
+    
+    .toggle-btn::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: white;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s;
+    }
+    
+    .toggle-btn.on::after { transform: translateX(24px); }
   </style>
 </head>
 <body>
   <div class="game-container">
+    <button class="settings-btn" id="settingsBtn" title="设置">⚙️</button>
     <h1>🐄 找牛牛</h1>
     <div class="info-bar">
       <span class="lives-display">❤️ 生命: <span id="livesDisplay">3</span></span>
-      <span class="mines-count">牛牛: <span id="minesDisplay">0</span>/3</span>
+      <span class="mines-count">牛牛: <span id="minesDisplay">0</span>/<span id="minesTotal">4</span></span>
       <span class="status" id="status"></span>
     </div>
-    <div class="color-legend">
-      <span><i class="swatch c0"></i>色组1</span>
-      <span><i class="swatch c1"></i>色组2</span>
-      <span><i class="swatch c2"></i>色组3</span>
-    </div>
+    <div class="color-legend" id="colorLegend"></div>
     <div class="mode-toggle">
       <button class="mode-btn active" id="revealBtn" data-mode="reveal">📖 翻开</button>
       <button class="mode-btn" id="flagBtn" data-mode="flag">🚩 标记</button>
     </div>
     <div class="grid" id="grid"></div>
     <button class="restart-btn" id="restartBtn">重新开始</button>
-    <p class="hint">同色相邻 · 每色1牛 · 每牛9宫格内无他牛</p>
+    <p class="hint">同色相邻 · 每色≥2格≤40% · 每牛9宫格内无他牛</p>
+  </div>
+
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <h3>色组数量</h3>
+      <div class="picker-wrap">
+        <div class="picker-list" id="pickerList"></div>
+      </div>
+      <p style="font-size:0.8rem;color:#8b9aaa;text-align:center;margin-top:8px;">将决定：N色 / N牛 / N×N 棋盘</p>
+      <div class="hint-toggle">
+        <span>显示第一个雷</span>
+        <button class="toggle-btn on" id="hintToggle" type="button" title="开关"></button>
+      </div>
+      <button class="apply-btn" id="applyBtn">调整棋盘</button>
+    </div>
   </div>
 
   <script>
-    const ROWS = 4;
-    const COLS = 4;
-    const MINES = 3;
     const LIVES = 3;
+    const SIZE_MIN = 4;
+    const SIZE_MAX = 10;
+
+    let ROWS = 4;
+    let COLS = 4;
+    let MINES = 4;
+    let showHintMine = true;
 
     let grid = [];
     let minePositions = [];
@@ -265,6 +451,7 @@
       statusEl.textContent = '';
       statusEl.className = 'status';
       minesDisplayEl.textContent = '0';
+      document.getElementById('minesTotal').textContent = MINES;
       livesDisplayEl.textContent = LIVES;
       currentMode = 'reveal';
       updateModeButtons();
@@ -277,6 +464,7 @@
         }
       }
       assignColorsContiguous();
+      updateColorLegend();
 
       // 雷的生成规则：每色1雷、每雷周围9宫格无其他雷、每行每列各1雷
       if (!placeMinesWithRules()) {
@@ -297,11 +485,12 @@
         initRetryCount = 0;
       }
 
-      // 默认随机显示一个雷
-      const hintMine = minePositions[Math.floor(Math.random() * minePositions.length)];
-      grid[hintMine[0]][hintMine[1]].revealed = true;
-      minesRevealed = 1;
-      minesDisplayEl.textContent = '1';
+      if (showHintMine) {
+        const hintMine = minePositions[Math.floor(Math.random() * minePositions.length)];
+        grid[hintMine[0]][hintMine[1]].revealed = true;
+        minesRevealed = 1;
+        minesDisplayEl.textContent = '1';
+      }
 
       renderGrid();
     }
@@ -315,7 +504,22 @@
 
     function assignColorsContiguous() {
       const total = ROWS * COLS;
-      const perColor = [Math.floor(total / MINES), Math.floor(total / MINES), total - 2 * Math.floor(total / MINES)];
+      const minPer = 2;
+      const maxPer = Math.floor(total * 0.4);
+      let base = Math.floor(total / MINES);
+      let perColor = Array(MINES).fill(base);
+      for (let i = 0; i < total - base * MINES; i++) perColor[i]++;
+      perColor = perColor.map(c => Math.max(minPer, Math.min(maxPer, c)));
+      let sum = perColor.reduce((a, b) => a + b, 0);
+      while (sum !== total) {
+        if (sum < total) {
+          const i = perColor.findIndex(c => c < maxPer);
+          if (i >= 0) { perColor[i]++; sum++; } else break;
+        } else {
+          const i = perColor.findIndex(c => c > minPer);
+          if (i >= 0) { perColor[i]--; sum--; } else break;
+        }
+      }
       const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
       const is4Adj = (r1,c1,r2,c2) => Math.abs(r1-r2)+Math.abs(c1-c2)===1;
       const getNeighbors = (r,c) => dirs.map(([dr,dc])=>[r+dr,c+dc]).filter(([nr,nc])=>nr>=0&&nr<ROWS&&nc>=0&&nc<COLS);
@@ -374,8 +578,7 @@
     }
 
     function placeMinesWithRules() {
-      // 按颜色分组
-      const colorGroups = [[], [], []];
+      const colorGroups = Array.from({ length: MINES }, () => []);
       for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
           colorGroups[grid[r][c].colorIndex].push([r, c]);
@@ -392,9 +595,7 @@
       };
 
       for (let attempt = 0; attempt < 500; attempt++) {
-        shuffle(colorGroups[0]);
-        shuffle(colorGroups[1]);
-        shuffle(colorGroups[2]);
+        colorGroups.forEach(g => shuffle(g));
         const chosen = [];
         for (let color = 0; color < MINES; color++) {
           const valid = colorGroups[color].filter((pos) => validWith(pos, chosen));
@@ -413,12 +614,17 @@
     }
 
     function renderGrid() {
+      const cellSize = Math.min(80, Math.floor(400 / ROWS));
+      gridEl.style.gridTemplateColumns = `repeat(${COLS}, ${cellSize}px)`;
+      gridEl.style.gridTemplateRows = `repeat(${ROWS}, ${cellSize}px)`;
       gridEl.innerHTML = '';
       for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
           const cellData = grid[r][c];
           const cell = document.createElement('div');
           cell.className = `cell color-${cellData.colorIndex}`;
+          cell.style.width = cellSize + 'px';
+          cell.style.height = cellSize + 'px';
           cell.dataset.r = r;
           cell.dataset.c = c;
           if (cellData.revealed) {
@@ -524,6 +730,91 @@
       updateModeButtons();
     });
     restartBtn.addEventListener('click', initGame);
+
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsModal = document.getElementById('settingsModal');
+    const pickerList = document.getElementById('pickerList');
+    const applyBtn = document.getElementById('applyBtn');
+
+    function initPicker() {
+      pickerList.innerHTML = '';
+      const topPad = document.createElement('div');
+      topPad.className = 'picker-pad';
+      pickerList.appendChild(topPad);
+      for (let n = SIZE_MIN; n <= SIZE_MAX; n++) {
+        const item = document.createElement('div');
+        item.className = 'picker-item' + (n === MINES ? ' selected' : '');
+        item.textContent = n;
+        item.dataset.value = n;
+        pickerList.appendChild(item);
+      }
+      const bottomPad = document.createElement('div');
+      bottomPad.className = 'picker-pad';
+      pickerList.appendChild(bottomPad);
+    }
+
+    function updatePickerScroll() {
+      const itemHeight = 50;
+      const padHeight = 45;
+      const wrapHeight = 140;
+      const idx = MINES - SIZE_MIN;
+      pickerList.scrollTop = padHeight + idx * itemHeight - wrapHeight / 2 + itemHeight / 2;
+      setTimeout(() => pickerList.dispatchEvent(new Event('scroll')), 50);
+    }
+
+    pickerList.addEventListener('scroll', () => {
+      const items = pickerList.querySelectorAll('.picker-item');
+      const wrapRect = pickerList.parentElement.getBoundingClientRect();
+      const center = wrapRect.top + wrapRect.height / 2;
+      let closestVal = SIZE_MIN;
+      let minDist = 999;
+      items.forEach((item, i) => {
+        const rect = item.getBoundingClientRect();
+        const itemCenter = rect.top + rect.height / 2;
+        const dist = Math.abs(itemCenter - center);
+        if (dist < minDist) {
+          minDist = dist;
+          closestVal = parseInt(item.dataset.value, 10);
+        }
+      });
+      items.forEach(item => item.classList.toggle('selected', parseInt(item.dataset.value, 10) === closestVal));
+    });
+
+    settingsBtn.addEventListener('click', () => {
+      initPicker();
+      updatePickerScroll();
+      hintToggle.classList.toggle('on', showHintMine);
+      settingsModal.classList.add('show');
+    });
+
+    settingsModal.addEventListener('click', (e) => {
+      if (e.target === settingsModal) settingsModal.classList.remove('show');
+    });
+
+    const hintToggle = document.getElementById('hintToggle');
+    hintToggle.addEventListener('click', () => {
+      showHintMine = !showHintMine;
+      hintToggle.classList.toggle('on', showHintMine);
+    });
+
+    applyBtn.addEventListener('click', () => {
+      const selected = pickerList.querySelector('.picker-item.selected');
+      const n = selected ? parseInt(selected.dataset.value, 10) : MINES;
+      ROWS = COLS = MINES = n;
+      showHintMine = hintToggle.classList.contains('on');
+      settingsModal.classList.remove('show');
+      initGame();
+    });
+
+    function updateColorLegend() {
+      const legend = document.getElementById('colorLegend');
+      legend.innerHTML = '';
+      for (let i = 0; i < MINES; i++) {
+        const span = document.createElement('span');
+        span.innerHTML = `<i class="swatch c${i % 10}"></i>色组${i + 1}`;
+        legend.appendChild(span);
+      }
+    }
 
     initGame();
   </script>
